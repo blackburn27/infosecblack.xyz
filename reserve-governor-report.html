@@ -177,6 +177,21 @@
             width: 100%; height: 85vh;
             border: none; display: block;
         }
+        .mobile-pdf-btn {
+            display: none;
+            width: 100%; padding: 20px;
+            font-family: var(--px); font-size: 0.5rem;
+            color: var(--cyan); text-decoration: none;
+            text-align: center; letter-spacing: 2px;
+        }
+        @media (max-width: 768px) {
+            .pdf-embed { display: none; }
+            .mobile-pdf-btn { display: block; }
+            .page { padding: 100px 24px 60px; }
+            .stat-bar { gap: 10px; }
+            .stat { min-width: 80px; padding: 12px 16px; }
+            .report-title { font-size: 1.1rem; }
+        }
 
         footer {
             text-align: center; padding: 30px 0 20px;
@@ -270,6 +285,7 @@
             src="./reserve_governor_security_review.pdf"
             title="Reserve Governor Security Review">
         </iframe>
+        <a href="./reserve_governor_security_review.pdf" target="_blank" class="mobile-pdf-btn">[ TAP TO VIEW FULL REPORT ]</a>
     </div>
 
 </div>
