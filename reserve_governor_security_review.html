@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reserve Governor — Security Review</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:     #060614;
+            --surface:#0d0d2b;
+            --cyan:   #00e5ff;
+            --purple: #7b2fff;
+            --text:   #ccd6f6;
+            --muted:  #8892b0;
+            --red:    #ff4d6d;
+            --orange: #ff9f43;
+            --yellow: #ffd700;
+            --px:     'Press Start 2P', monospace;
+            --mono:   'Share Tech Mono', monospace;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        /* ─── COVER PAGE ─── */
+        .cover {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px;
+            border-bottom: 2px solid rgba(0,229,255,0.15);
+            page-break-after: always;
+            position: relative;
+        }
+        .cover-tag {
+            font-family: var(--px); font-size: 0.45rem;
+            color: var(--cyan); letter-spacing: 4px;
+            margin-bottom: 28px;
+        }
+        .cover-tag::before { content: '> '; color: var(--purple); }
+        .cover-title {
+            font-family: var(--px); font-size: 2.2rem;
+            color: var(--text); line-height: 1.5;
+            margin-bottom: 8px;
+        }
+        .cover-title span { color: var(--cyan); }
+        .cover-sub {
+            font-size: 1.1rem; color: var(--muted);
+            margin-bottom: 60px;
+        }
+        .cover-meta {
+            display: flex; gap: 60px; flex-wrap: wrap;
+            margin-bottom: 60px;
+        }
+        .meta-block { display: flex; flex-direction: column; gap: 4px; }
+        .meta-label {
+            font-family: var(--px); font-size: 0.35rem;
+            color: var(--muted); letter-spacing: 2px;
+        }
+        .meta-val { font-size: 0.95rem; color: var(--cyan); }
+
+        .cover-stats {
+            display: flex; gap: 0;
+            border: 1px solid rgba(0,229,255,0.15);
+            width: fit-content;
+        }
+        .cstat {
+            padding: 20px 30px;
+            border-right: 1px solid rgba(0,229,255,0.1);
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .cstat:last-child { border-right: none; }
+        .cstat-label {
+            font-family: var(--px); font-size: 0.32rem;
+            color: var(--muted); letter-spacing: 2px;
+        }
+        .cstat-val {
+            font-family: var(--px); font-size: 1.2rem;
+        }
+        .cstat-val.red    { color: var(--red); }
+        .cstat-val.orange { color: var(--orange); }
+        .cstat-val.yellow { color: var(--yellow); }
+        .cstat-val.cyan   { color: var(--cyan); }
+
+        .cover-auditor {
+            position: absolute; bottom: 60px; right: 80px;
+            text-align: right;
+        }
+        .cover-auditor .meta-label { margin-bottom: 6px; }
+        .cover-auditor .meta-val { font-size: 1.1rem; }
+
+        /* ─── CONTENT ─── */
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 80px;
+        }
+
+        h2 {
+            font-family: var(--px); font-size: 0.65rem;
+            color: var(--cyan); letter-spacing: 3px;
+            margin: 50px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,229,255,0.12);
+        }
+        h2::before { content: '// '; color: var(--purple); }
+
+        h3 {
+            font-family: var(--px); font-size: 0.5rem;
+            color: var(--text); margin: 30px 0 12px;
+        }
+
+        p { margin-bottom: 14px; color: var(--text); }
+
+        /* ─── FINDING CARD ─── */
+        .finding {
+            border: 1px solid rgba(0,229,255,0.12);
+            background: var(--surface);
+            margin-bottom: 32px;
+            page-break-inside: avoid;
+        }
+        .finding-header {
+            display: flex; align-items: center; gap: 16px;
+            padding: 16px 22px;
+            border-bottom: 1px solid rgba(0,229,255,0.1);
+        }
+        .finding-id {
+            font-family: var(--px); font-size: 0.38rem;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+        .finding-title {
+            font-size: 0.95rem;
+            color: var(--text);
+            flex: 1;
+        }
+        .badge {
+            font-family: var(--px); font-size: 0.35rem;
+            padding: 5px 10px; border: 1px solid;
+            white-space: nowrap;
+        }
+        .badge.high   { color: var(--red);    border-color: rgba(255,77,109,0.4); }
+        .badge.medium { color: var(--orange);  border-color: rgba(255,159,67,0.4); }
+        .badge.low    { color: var(--yellow);  border-color: rgba(255,215,0,0.35); }
+        .badge.info   { color: var(--muted);   border-color: rgba(136,146,176,0.3); }
+
+        .finding-body { padding: 20px 22px; }
+        .finding-body p { font-size: 0.88rem; color: var(--muted); margin-bottom: 10px; }
+
+        .finding-meta {
+            display: flex; gap: 30px;
+            padding: 12px 22px;
+            border-top: 1px solid rgba(0,229,255,0.07);
+            background: rgba(0,0,0,0.15);
+        }
+        .fmeta-item { display: flex; flex-direction: column; gap: 3px; }
+        .fmeta-label {
+            font-family: var(--px); font-size: 0.3rem;
+            color: var(--muted); letter-spacing: 1px;
+        }
+        .fmeta-val { font-size: 0.82rem; color: var(--cyan); }
+
+        /* code block */
+        pre {
+            background: rgba(0,0,0,0.3);
+            border-left: 3px solid var(--purple);
+            padding: 14px 18px;
+            font-family: var(--mono);
+            font-size: 0.78rem;
+            color: var(--cyan);
+            overflow-x: auto;
+            margin: 12px 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* scope table */
+        table {
+            width: 100%; border-collapse: collapse;
+            margin-bottom: 20px; font-size: 0.85rem;
+        }
+        th {
+            font-family: var(--px); font-size: 0.32rem;
+            color: var(--muted); letter-spacing: 2px;
+            text-align: left; padding: 10px 14px;
+            border-bottom: 1px solid rgba(0,229,255,0.15);
+        }
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(0,229,255,0.06);
+            color: var(--muted);
+        }
+        td:first-child { color: var(--cyan); }
+
+        /* summary table */
+        .sum-table { margin-bottom: 40px; }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            font-family: var(--px); font-size: 0.32rem;
+            color: var(--muted);
+            border-top: 1px solid rgba(0,229,255,0.08);
+            margin-top: 60px;
+        }
+
+        @page { margin: 0; }
+        @media print {
+            body { background: #060614; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .cover { page-break-after: always; }
+            .finding { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════ COVER ═══════════════════ -->
+<div class="cover">
+    <p class="cover-tag">security_review · cantina_public_competition</p>
+    <h1 class="cover-title">Reserve <span>Governor</span></h1>
+    <p class="cover-sub">Independent Security Assessment — Full Audit Report</p>
+
+    <div class="cover-meta">
+        <div class="meta-block">
+            <span class="meta-label">PROTOCOL</span>
+            <span class="meta-val">Reserve Governor</span>
+        </div>
+        <div class="meta-block">
+            <span class="meta-label">PLATFORM</span>
+            <span class="meta-val">Cantina</span>
+        </div>
+        <div class="meta-block">
+            <span class="meta-label">DATE</span>
+            <span class="meta-val">May 2026</span>
+        </div>
+        <div class="meta-block">
+            <span class="meta-label">COMMIT</span>
+            <span class="meta-val">reserve-protocol/reserve-governor</span>
+        </div>
+        <div class="meta-block">
+            <span class="meta-label">LINES REVIEWED</span>
+            <span class="meta-val">2,742</span>
+        </div>
+    </div>
+
+    <div class="cover-stats">
+        <div class="cstat">
+            <span class="cstat-label">HIGH</span>
+            <span class="cstat-val red">1</span>
+        </div>
+        <div class="cstat">
+            <span class="cstat-label">MEDIUM</span>
+            <span class="cstat-val orange">1</span>
+        </div>
+        <div class="cstat">
+            <span class="cstat-label">LOW</span>
+            <span class="cstat-val yellow">7</span>
+        </div>
+        <div class="cstat">
+            <span class="cstat-label">INFORMATIONAL</span>
+            <span class="cstat-val cyan">3</span>
+        </div>
+        <div class="cstat">
+            <span class="cstat-label">TOTAL</span>
+            <span class="cstat-val cyan">12</span>
+        </div>
+    </div>
+
+    <div class="cover-auditor">
+        <span class="meta-label">AUDITORS</span>
+        <div class="meta-val">Prameya Singh Soni (blackburn)</div>
+        <div style="font-size:0.85rem; color: var(--muted); margin-top:4px;">MuscleFreak92</div>
+    </div>
+</div>
+
+<!-- ═══════════════════ CONTENT ═══════════════════ -->
+<div class="content">
+
+    <!-- Executive Summary -->
+    <h2>Executive Summary</h2>
+    <p>
+        This report presents the findings of an independent security review of the Reserve Governor protocol,
+        a hybrid optimistic/pessimistic on-chain governance system built on OpenZeppelin Governor v5.
+        The audit was conducted as part of the Cantina public competition in May 2026.
+    </p>
+    <p>
+        The protocol introduces a dual-path proposal system: a fast optimistic path (with a veto period)
+        and a standard pessimistic path (with a full community vote). Both paths share a single
+        <code>TimelockControllerOptimistic</code> instance and are protected by a singleton
+        <code>Guardian</code> contract that serves as the designated CANCELLER_ROLE holder.
+    </p>
+    <p>
+        A total of <strong>12 findings</strong> were identified across 9 core contracts and 2 library contracts,
+        ranging from governance denial-of-service vulnerabilities to ERC4626 accounting issues and
+        reward token edge cases. Two findings were submitted and validated by Cantina judges during the competition.
+    </p>
+
+    <!-- Scope -->
+    <h2>Scope</h2>
+    <table>
+        <tr><th>CONTRACT</th><th>DESCRIPTION</th><th>LINES</th></tr>
+        <tr><td>StakingVault.sol</td><td>ERC4626 + ERC20Votes + dual delegation + multi-token rewards</td><td>572</td></tr>
+        <tr><td>ReserveOptimisticGovernor.sol</td><td>Hybrid governor — optimistic + standard proposals</td><td>525</td></tr>
+        <tr><td>ProposalLib.sol</td><td>Proposal creation and pessimistic transition logic (delegatecall)</td><td>233</td></tr>
+        <tr><td>Deployer.sol</td><td>Factory for full-system deployment</td><td>229</td></tr>
+        <tr><td>Guardian.sol</td><td>Singleton CANCELLER_ROLE holder for all timelocks</td><td>124</td></tr>
+        <tr><td>OptimisticSelectorRegistry.sol</td><td>(target, selector) allowlist for fast proposals</td><td>119</td></tr>
+        <tr><td>TimelockControllerOptimistic.sol</td><td>Shared timelock + bypass path for optimistic execution</td><td>99</td></tr>
+        <tr><td>VersionRegistry.sol</td><td>Versioned deployer registry</td><td>93</td></tr>
+        <tr><td>UnstakingManager.sol</td><td>Time-locked withdrawal manager</td><td>83</td></tr>
+        <tr><td>RewardTokenRegistry.sol</td><td>Governs which tokens may be used as rewards</td><td>58</td></tr>
+        <tr><td>ThrottleLib.sol</td><td>Per-proposer throttle (delegatecall)</td><td>57</td></tr>
+        <tr><td>Constants.sol + Versioned.sol</td><td>Shared role hashes and version mixin</td><td>41</td></tr>
+    </table>
+
+    <!-- Findings Summary -->
+    <h2>Findings Summary</h2>
+    <table class="sum-table">
+        <tr><th>ID</th><th>TITLE</th><th>SEVERITY</th><th>CONTRACT</th></tr>
+        <tr><td>H-01</td><td>Optimistic Proposer Aborts Confirmation Vote — Persistent Governance DoS</td><td style="color:#ff4d6d">HIGH</td><td>Governor / ProposalLib</td></tr>
+        <tr><td>M-01</td><td>additionalGuardians Bypass Guardian Restrictions — Unrestricted Cancellation</td><td style="color:#ff9f43">MEDIUM</td><td>Deployer / Governor</td></tr>
+        <tr><td>L-01</td><td>Proposer Cancels Succeeded Optimistic Proposal — proposalId Permanently Locked</td><td style="color:#ffd700">LOW</td><td>Governor</td></tr>
+        <tr><td>L-02</td><td>Veto Threshold Uses Floor Instead of Documented Ceil — Veto 1 Token Easier</td><td style="color:#ffd700">LOW</td><td>Governor</td></tr>
+        <tr><td>L-03</td><td>Fee-on-Transfer Underlying Bricks Native Reward Accounting via Underflow</td><td style="color:#ffd700">LOW</td><td>StakingVault</td></tr>
+        <tr><td>L-04</td><td>Missing _decimalsOffset() Override — ERC4626 First-Depositor Inflation Attack</td><td style="color:#ffd700">LOW</td><td>StakingVault</td></tr>
+        <tr><td>L-05</td><td>No Upper Bound on vetoPeriod — Misconfiguration Freezes Governance 136 Years</td><td style="color:#ffd700">LOW</td><td>Governor</td></tr>
+        <tr><td>L-06</td><td>Deflationary Reward Token Causes Permanent Vault DoS via _accrueRewards Underflow</td><td style="color:#ffd700">LOW</td><td>StakingVault</td></tr>
+        <tr><td>L-07</td><td>Registry Deregistration Silently Discards Pending User Rewards</td><td style="color:#ffd700">LOW</td><td>StakingVault</td></tr>
+        <tr><td>I-01</td><td>Governance Cannot Cancel Proposals via governor.cancel() from Within a Proposal</td><td style="color:#8892b0">INFO</td><td>Governor</td></tr>
+        <tr><td>I-02</td><td>Zero-Supply Path Returns Canceled Without Setting proposalCore.canceled Flag</td><td style="color:#8892b0">INFO</td><td>Governor</td></tr>
+        <tr><td>I-03</td><td>unregisterSelectors Race Window — In-Flight Optimistic Proposals Survive Removal</td><td style="color:#8892b0">INFO</td><td>SelectorRegistry</td></tr>
+    </table>
+
+    <!-- ═══ FINDINGS ═══ -->
+    <h2>Detailed Findings</h2>
+
+    <!-- H-01 -->
+    <div class="finding">
+        <div class="finding-header">
+            <span class="finding-id">H-01</span>
+            <span class="finding-title">Optimistic Proposer Can Abort the Confirmation Vote and Re-Submit Indefinitely, Enabling Persistent Governance DoS</span>
+            <span class="badge high">HIGH</span>
+        </div>
+        <div class="finding-body">
+            <p>When a vetoed optimistic proposal transitions to pessimistic governance, <code>ProposalLib.transitionToPessimistic()</code> sets the confirmation proposal's <code>proposer</code> to the original optimistic proposer. Since standard proposals can be canceled by their proposer during <code>Pending</code> state, the adversary can abort the community-triggered confirmation vote before voting begins — then re-submit the same calldata with a new description and repeat indefinitely.</p>
+            <pre>// ProposalLib.sol — transitionToPessimistic()
+ProposalData memory proposalData = ProposalData(
+    newProposalId,
+    governor.proposalProposer(proposalId),  // original optimistic proposer
+    ...
+);</pre>
+            <pre>// ReserveOptimisticGovernor.sol — _validateCancel()
+return _isOptimistic(proposalId) ? s != ProposalState.Defeated : s == ProposalState.Pending;
+//  standard proposal: proposer may cancel during Pending ← confirmation is standard</pre>
+            <p><strong>Impact:</strong> Any governance action routed through the optimistic path can be permanently prevented from reaching a community vote. Each cycle permanently consumes a confirmation proposalId. Revoking the attacker's role requires a slow governance proposal the attacker can disrupt with remaining throttle slots.</p>
+            <p><strong>Recommendation:</strong> In <code>_validateCancel</code>, block proposer cancellation for proposals whose description starts with <code>CONFIRMATION_PREFIX</code>. Alternatively, assign the confirmation's proposer to <code>address(0)</code> in <code>transitionToPessimistic</code>.</p>
+        </div>
+        <div class="finding-meta">
+            <div class="fmeta-item"><span class="fmeta-label">CONTRACT</span><span class="fmeta-val">Governor / ProposalLib</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">LIKELIHOOD</span><span class="fmeta-val">Low</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">IMPACT</span><span class="fmeta-val">High</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">STATUS</span><span class="fmeta-val" style="color:#26de81">Validated on Cantina</span></div>
+        </div>
+    </div>
+
+    <!-- M-01 -->
+    <div class="finding">
+        <div class="finding-header">
+            <span class="finding-id">M-01</span>
+            <span class="finding-title">Inconsistent Access Control Allows additionalGuardians to Bypass Guardian Restrictions and Unconditionally Cancel Any Proposal</span>
+            <span class="badge medium">MEDIUM</span>
+        </div>
+        <div class="finding-body">
+            <p>The <code>Deployer</code> contract grants <code>CANCELLER_ROLE</code> on the timelock directly to every address in <code>additionalGuardians[]</code>. Because <code>_validateCancel()</code> returns <code>true</code> for any <code>CANCELLER_ROLE</code> holder unconditionally, these addresses can cancel any proposal — including standard proposals and active confirmation votes — without passing through the <code>Guardian</code> contract's access control logic.</p>
+            <pre>// Deployer.sol
+for (uint256 i = 0; i &lt; baseParams.additionalGuardians.length; ++i) {
+    _timelock.grantRole(CANCELLER_ROLE, baseParams.additionalGuardians[i]);
+}
+
+// ReserveOptimisticGovernor.sol
+if (t.hasRole(CANCELLER_ROLE, caller)) {
+    return true;  // no further checks — any CANCELLER_ROLE holder is unrestricted
+}</pre>
+            <p><strong>Impact:</strong> additionalGuardians can censor standard governance proposals, cancel active confirmation votes, and complicate their own removal. This contradicts the Guardian NatDoc which declares it the sole CANCELLER_ROLE holder: <em>"Singleton contract to serve as CANCELLER_ROLE for all timelocks."</em></p>
+            <p><strong>Recommendation:</strong> Do not grant CANCELLER_ROLE directly to additionalGuardians. Instead, grant them DEFAULT_ADMIN_ROLE on the Guardian contract so all cancellations route through Guardian's validation logic.</p>
+        </div>
+        <div class="finding-meta">
+            <div class="fmeta-item"><span class="fmeta-label">CONTRACT</span><span class="fmeta-val">Deployer / Governor</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">LIKELIHOOD</span><span class="fmeta-val">Medium</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">IMPACT</span><span class="fmeta-val">High</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">STATUS</span><span class="fmeta-val" style="color:#26de81">Validated on Cantina</span></div>
+        </div>
+    </div>
+
+    <!-- L-01 -->
+    <div class="finding">
+        <div class="finding-header">
+            <span class="finding-id">L-01</span>
+            <span class="finding-title">Proposer Can Cancel a Succeeded Optimistic Proposal, Permanently Locking the proposalId</span>
+            <span class="badge low">LOW</span>
+        </div>
+        <div class="finding-body">
+            <p>For optimistic proposals, <code>_validateCancel</code> allows the proposer to cancel in any state except <code>Defeated</code>. A proposer can therefore cancel their own proposal after it has <code>Succeeded</code> (veto period passed without threshold). The proposalId is permanently consumed and cannot be reused for identical calldata.</p>
+            <p><strong>Recommendation:</strong> Restrict proposer cancellation of optimistic proposals to <code>Pending</code> state only (before the veto period starts).</p>
+        </div>
+        <div class="finding-meta">
+            <div class="fmeta-item"><span class="fmeta-label">CONTRACT</span><span class="fmeta-val">Governor</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">LIKELIHOOD</span><span class="fmeta-val">Low</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">IMPACT</span><span class="fmeta-val">Low</span></div>
+        </div>
+    </div>
+
+    <!-- L-02 -->
+    <div class="finding">
+        <div class="finding-header">
+            <span class="finding-id">L-02</span>
+            <span class="finding-title">Veto Threshold Calculation Uses Floor+max(1) Instead of Documented ceil(), Making Veto 1 Token Easier Than Specified</span>
+            <span class="badge low">LOW</span>
+        </div>
+        <div class="finding-body">
+            <p>The README specifies <code>vetoThreshold = ceil(vetoThresholdRatio × pastTotalSupply / 1e18)</code>. The implementation uses integer floor division then <code>Math.max(..., 1)</code> — not ceil. For supplies where the ratio produces a fractional result, the actual threshold is 1 token lower than documented.</p>
+            <pre>// Code: floor + max(1)
+uint256 vetoThresholdTok = (_vetoThreshold * pastSupply) / 1e18;
+vetoThresholdTok = Math.max(vetoThresholdTok, 1);
+
+// proposalThreshold correctly uses ceil:
+return Math.mulDiv(proposalThresholdBps, token.getPastTotalSupply(clock() - 1), 10_000, Math.Rounding.Ceil);</pre>
+            <p><strong>Recommendation:</strong> Use <code>Math.mulDiv(..., Math.Rounding.Ceil)</code> to match the documented specification.</p>
+        </div>
+        <div class="finding-meta">
+            <div class="fmeta-item"><span class="fmeta-label">CONTRACT</span><span class="fmeta-val">Governor</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">LIKELIHOOD</span><span class="fmeta-val">Medium</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">IMPACT</span><span class="fmeta-val">Low</span></div>
+        </div>
+    </div>
+
+    <!-- L-03 -->
+    <div class="finding">
+        <div class="finding-header">
+            <span class="finding-id">L-03</span>
+            <span class="finding-title">Fee-on-Transfer or Balance-Decreasing Underlying Permanently Bricks Native Reward Accounting via uint256 Underflow</span>
+            <span class="badge low">LOW</span>
+        </div>
+        <div class="finding-body">
+            <p><code>_deposit()</code> increments both <code>totalDeposited</code> and <code>nativeBalanceLastKnown</code> by <code>assets</code> before the actual token transfer. For a fee-on-transfer underlying, the vault receives <code>assets - fee</code> but both variables reflect the full <code>assets</code> amount. On the next <code>_accrueRewards()</code> call, <code>nativeBalanceLastKnown - totalDeposited</code> underflows, permanently bricking all native reward accounting. Recovery requires a UUPS upgrade.</p>
+            <p><strong>Recommendation:</strong> Measure the actual received amount via balance snapshots before/after transfer, or check balance post-transfer and revert if fee is detected.</p>
+        </div>
+        <div class="finding-meta">
+            <div class="fmeta-item"><span class="fmeta-label">CONTRACT</span><span class="fmeta-val">StakingVault</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">LIKELIHOOD</span><span class="fmeta-val">Low</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">IMPACT</span><span class="fmeta-val">High</span></div>
+        </div>
+    </div>
+
+    <!-- L-04 -->
+    <div class="finding">
+        <div class="finding-header">
+            <span class="finding-id">L-04</span>
+            <span class="finding-title">Missing _decimalsOffset() Override Enables First-Depositor Share-Inflation Attack (Dampened by Streaming)</span>
+            <span class="badge low">LOW</span>
+        </div>
+        <div class="finding-body">
+            <p>StakingVault inherits OZ ERC4626Upgradeable but does not override <code>_decimalsOffset()</code>, which defaults to 0. With offset=0, only 1 virtual share and 1 virtual asset are added to the conversion math — providing negligible protection against the classic first-depositor inflation attack. An attacker deposits 1 wei, donates a large amount, and victim deposits round down to 0 shares. The native reward streaming mechanism dampens but does not eliminate the attack.</p>
+            <p><strong>Recommendation:</strong> Override <code>_decimalsOffset()</code> to return 6 or 18 to add meaningful virtual share protection.</p>
+        </div>
+        <div class="finding-meta">
+            <div class="fmeta-item"><span class="fmeta-label">CONTRACT</span><span class="fmeta-val">StakingVault</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">LIKELIHOOD</span><span class="fmeta-val">Low</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">IMPACT</span><span class="fmeta-val">Medium</span></div>
+        </div>
+    </div>
+
+    <!-- L-05 -->
+    <div class="finding">
+        <div class="finding-header">
+            <span class="finding-id">L-05</span>
+            <span class="finding-title">No Upper Bound on vetoPeriod or votingPeriod — Misconfiguration Can Freeze Governance for 136 Years</span>
+            <span class="badge low">LOW</span>
+        </div>
+        <div class="finding-body">
+            <p><code>vetoPeriod</code> and <code>votingPeriod</code> are stored as <code>uint32</code> with <code>type(uint32).max = 4,294,967,295 seconds ≈ 136 years</code>. No upper bound is enforced in <code>setOptimisticParams</code> or initialization. A misconfigured or malicious governance proposal setting either value to max would make all new proposals effectively unexecutable without cancellation.</p>
+            <p><strong>Recommendation:</strong> Add a sanity upper bound (e.g., 30 days) on both parameters in the setter and initializer.</p>
+        </div>
+        <div class="finding-meta">
+            <div class="fmeta-item"><span class="fmeta-label">CONTRACT</span><span class="fmeta-val">ReserveOptimisticGovernor</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">LIKELIHOOD</span><span class="fmeta-val">Low</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">IMPACT</span><span class="fmeta-val">Medium</span></div>
+        </div>
+    </div>
+
+    <!-- L-06 -->
+    <div class="finding">
+        <div class="finding-header">
+            <span class="finding-id">L-06</span>
+            <span class="finding-title">Deflationary or Negative-Rebasing Reward Token Permanently Bricks Vault via _accrueRewards Underflow</span>
+            <span class="badge low">LOW</span>
+        </div>
+        <div class="finding-body">
+            <p>In <code>_accrueRewards(address)</code>, the line <code>balanceLastKnown - rewardInfo.balanceAccounted</code> computes a uint256 subtraction. For a deflationary or negative-rebasing reward token, the actual balance can fall below <code>balanceAccounted</code>, causing a permanent underflow panic on every subsequent vault interaction. Unlike the native reward case (L-03), recovery is possible via <code>removeRewardToken()</code>, but requires admin intervention before the panic state is hit.</p>
+            <p><strong>Recommendation:</strong> Use checked arithmetic with a floor at 0, or validate reward token behavior at add time.</p>
+        </div>
+        <div class="finding-meta">
+            <div class="fmeta-item"><span class="fmeta-label">CONTRACT</span><span class="fmeta-val">StakingVault</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">LIKELIHOOD</span><span class="fmeta-val">Low</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">IMPACT</span><span class="fmeta-val">Medium</span></div>
+        </div>
+    </div>
+
+    <!-- L-07 -->
+    <div class="finding">
+        <div class="finding-header">
+            <span class="finding-id">L-07</span>
+            <span class="finding-title">Registry-Side Reward Token Deregistration Silently Discards Pending User Rewards Without Event</span>
+            <span class="badge low">LOW</span>
+        </div>
+        <div class="finding-body">
+            <p>When <code>RewardTokenRegistry</code> deregisters a token that a <code>StakingVault</code> still holds in its <code>rewardTokens</code> set, every subsequent <code>_accrueRewards</code> call silently discards the pending reward delta for that token. Unlike <code>removeRewardToken()</code> (which emits an event and has a NatDoc warning), this occurs without any vault-side action or notification — users with unclaimed reward index deltas permanently lose those rewards.</p>
+            <p><strong>Recommendation:</strong> Emit an event or require explicit vault-side acknowledgment before registry deregistration affects vault reward accounting.</p>
+        </div>
+        <div class="finding-meta">
+            <div class="fmeta-item"><span class="fmeta-label">CONTRACT</span><span class="fmeta-val">StakingVault</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">LIKELIHOOD</span><span class="fmeta-val">Low</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">IMPACT</span><span class="fmeta-val">Medium</span></div>
+        </div>
+    </div>
+
+    <!-- I-01 -->
+    <div class="finding">
+        <div class="finding-header">
+            <span class="finding-id">I-01</span>
+            <span class="finding-title">Governance Cannot Cancel Proposals via governor.cancel() from Within a Governance Proposal</span>
+            <span class="badge info">INFO</span>
+        </div>
+        <div class="finding-body">
+            <p>The Governor holds CANCELLER_ROLE on the timelock. However, governance proposals execute through the timelock — the <code>msg.sender</code> for target calls is the timelock, not the governor. Since the timelock does not hold CANCELLER_ROLE on itself, <code>_validateCancel</code> denies cancellation. Governance can only cancel via <code>guardian.cancel()</code> or <code>timelock.cancel(operationId)</code> directly.</p>
+            <p><strong>Recommendation:</strong> Document this behavior explicitly so governance designers are not surprised by it.</p>
+        </div>
+        <div class="finding-meta">
+            <div class="fmeta-item"><span class="fmeta-label">CONTRACT</span><span class="fmeta-val">Governor</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">IMPACT</span><span class="fmeta-val">Informational</span></div>
+        </div>
+    </div>
+
+    <!-- I-02 -->
+    <div class="finding">
+        <div class="finding-header">
+            <span class="finding-id">I-02</span>
+            <span class="finding-title">Zero-Supply Path Returns Canceled State Without Setting proposalCore.canceled Flag</span>
+            <span class="badge info">INFO</span>
+        </div>
+        <div class="finding-body">
+            <p>When <code>pastTotalSupply(snapshot) == 0</code>, <code>state()</code> returns <code>Canceled</code> — but <code>proposalCore.canceled</code> is never set. A subsequent call to <code>_cancel()</code> will revert because the proposal appears to be in a non-cancellable state bitmap. The throttle charge from the original proposal is permanently consumed.</p>
+            <p><strong>Recommendation:</strong> Set <code>proposalCore.canceled = true</code> in the zero-supply path, or treat zero-supply as <code>Expired</code> to avoid state inconsistency.</p>
+        </div>
+        <div class="finding-meta">
+            <div class="fmeta-item"><span class="fmeta-label">CONTRACT</span><span class="fmeta-val">Governor</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">IMPACT</span><span class="fmeta-val">Informational</span></div>
+        </div>
+    </div>
+
+    <!-- I-03 -->
+    <div class="finding">
+        <div class="finding-header">
+            <span class="finding-id">I-03</span>
+            <span class="finding-title">unregisterSelectors Race Window — In-Flight Optimistic Proposals Survive Selector Removal</span>
+            <span class="badge info">INFO</span>
+        </div>
+        <div class="finding-body">
+            <p>The selector allowlist is checked only at <code>proposeOptimistic()</code> time. <code>executeBatchBypass()</code> does not re-validate selectors at execution. A proposal submitted with a valid selector can still execute after that selector is unregistered via a governance proposal. The Guardian must monitor and cancel such proposals independently.</p>
+            <p><strong>Recommendation:</strong> Document this as an explicit invariant that Guardian operators must enforce, or add optional re-validation at execution time.</p>
+        </div>
+        <div class="finding-meta">
+            <div class="fmeta-item"><span class="fmeta-label">CONTRACT</span><span class="fmeta-val">OptimisticSelectorRegistry / Governor</span></div>
+            <div class="fmeta-item"><span class="fmeta-label">IMPACT</span><span class="fmeta-val">Informational</span></div>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <p>Reserve Governor Security Review · Prameya Singh Soni (blackburn) & MuscleFreak92 · May 2026 · Cantina Public Competition</p>
+</footer>
+
+</body>
+</html>

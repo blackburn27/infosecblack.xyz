@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AggLayer Vault Bridge — Security Review · blackburn</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:      #060614;
+            --surface: #0d0d2b;
+            --cyan:    #00e5ff;
+            --purple:  #7b2fff;
+            --text:    #ccd6f6;
+            --muted:   #8892b0;
+            --px:      'Press Start 2P', monospace;
+            --mono:    'Share Tech Mono', monospace;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--mono);
+            overflow-x: hidden;
+            cursor: none;
+            min-height: 100vh;
+        }
+
+        /* ── Scanlines ── */
+        .scanlines {
+            position: fixed; inset: 0;
+            pointer-events: none; z-index: 200;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent, transparent 2px,
+                rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px
+            );
+        }
+
+        /* ── Custom cursor ── */
+        #cursor {
+            position: fixed;
+            width: 12px; height: 12px;
+            background: var(--cyan);
+            pointer-events: none; z-index: 9999;
+            transform: translate(-50%,-50%);
+            image-rendering: pixelated;
+            transition: background 0.1s, transform 0.05s;
+        }
+        #cursor.hover { background: var(--purple); transform: translate(-50%,-50%) scale(1.5); }
+
+        /* ── Noise grain ── */
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            opacity: 0.025; pointer-events: none; z-index: 1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 180px 180px;
+        }
+
+        /* ── Nav ── */
+        nav {
+            position: fixed; top: 0; width: 100%;
+            padding: 22px 50px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100;
+            background: rgba(6,6,20,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,229,255,0.06);
+        }
+        .nav-logo {
+            font-family: var(--px); font-size: 1.1rem;
+            color: var(--cyan); text-decoration: none;
+        }
+        .nav-logo span { color: var(--purple); }
+        .nav-back {
+            font-family: var(--px); font-size: 0.48rem;
+            color: var(--muted); text-decoration: none;
+            display: flex; align-items: center; gap: 10px;
+            transition: color 0.2s;
+        }
+        .nav-back:hover { color: var(--cyan); }
+        .nav-back::before { content: '←'; color: var(--cyan); }
+
+        /* ── Page wrapper ── */
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 120px 60px 80px;
+            position: relative; z-index: 10;
+        }
+
+        /* ── Header ── */
+        .report-eyebrow {
+            font-family: var(--px); font-size: 0.52rem;
+            color: var(--cyan); letter-spacing: 3px;
+            margin-bottom: 16px;
+        }
+        .report-eyebrow::before { content: '> '; color: var(--purple); }
+
+        .report-title {
+            font-family: var(--px); font-size: 1.6rem;
+            color: var(--text); line-height: 1.4;
+            margin-bottom: 10px;
+        }
+        .report-title span { color: var(--cyan); }
+
+        .report-sub {
+            font-size: 1rem; color: var(--muted);
+            margin-bottom: 40px; line-height: 1.7;
+        }
+
+        /* ── Stat bar ── */
+        .stat-bar {
+            display: flex; flex-wrap: wrap; gap: 14px;
+            margin-bottom: 50px;
+        }
+        .stat {
+            background: var(--surface);
+            border: 1px solid rgba(0,229,255,0.14);
+            padding: 16px 24px;
+            display: flex; flex-direction: column; gap: 6px;
+            box-shadow: 3px 3px 0 rgba(123,47,255,0.2);
+            min-width: 130px;
+        }
+        .stat-label {
+            font-family: var(--px); font-size: 0.36rem;
+            color: var(--muted); letter-spacing: 2px;
+        }
+        .stat-val {
+            font-family: var(--px); font-size: 0.9rem;
+            color: var(--cyan);
+        }
+        .stat-val.red   { color: #ff4d6d; }
+        .stat-val.orange { color: #ff9f43; }
+        .stat-val.yellow { color: #ffd700; }
+
+        /* ── Severity legend ── */
+        .severity-row {
+            display: flex; flex-wrap: wrap; gap: 10px;
+            margin-bottom: 44px;
+        }
+        .sev-chip {
+            font-family: var(--px); font-size: 0.44rem;
+            padding: 7px 14px; border: 1px solid;
+        }
+        .sev-chip.critical { color: #ff4d6d; border-color: rgba(255,77,109,0.4); }
+        .sev-chip.high     { color: #ff9f43; border-color: rgba(255,159,67,0.4); }
+        .sev-chip.medium   { color: #ffd700; border-color: rgba(255,215,0,0.35); }
+        .sev-chip.low      { color: var(--cyan); border-color: rgba(0,229,255,0.3); }
+        .sev-chip.info     { color: var(--muted); border-color: rgba(136,146,176,0.3); }
+
+        /* ── Download button ── */
+        .dl-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            font-family: var(--px); font-size: 0.5rem;
+            color: var(--cyan); border: 2px solid var(--cyan);
+            padding: 14px 22px; text-decoration: none;
+            box-shadow: 4px 4px 0 var(--purple);
+            transition: all 0.15s; margin-bottom: 50px;
+        }
+        .dl-btn:hover {
+            background: rgba(0,229,255,0.07);
+            box-shadow: 6px 6px 0 var(--purple);
+            transform: translate(-2px,-2px);
+        }
+        .dl-btn svg { width: 15px; height: 15px; fill: currentColor; }
+
+        /* ── PDF embed ── */
+        .pdf-wrap {
+            border: 1px solid rgba(0,229,255,0.18);
+            box-shadow: 6px 6px 0 rgba(123,47,255,0.3);
+            background: var(--surface);
+            position: relative;
+        }
+        .pdf-wrap::before {
+            content: 'REPORT_VIEWER';
+            font-family: var(--px); font-size: 0.36rem;
+            color: var(--muted); letter-spacing: 3px;
+            position: absolute; top: -20px; left: 0;
+        }
+        .pdf-embed {
+            width: 100%; height: 85vh;
+            border: none; display: block;
+        }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center; padding: 30px 0 20px;
+            font-family: var(--px); font-size: 0.38rem;
+            color: var(--muted);
+            border-top: 1px solid rgba(0,229,255,0.06);
+            margin-top: 60px;
+            position: relative; z-index: 10;
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--purple); }
+        ::selection { background: rgba(0,229,255,0.18); color: var(--cyan); }
+    </style>
+</head>
+<body>
+
+<div class="scanlines"></div>
+<div id="cursor"></div>
+
+<nav>
+    <a href="./index.html" class="nav-logo">B<span>_</span></a>
+    <a href="./index.html#work" class="nav-back">Back to Work</a>
+</nav>
+
+<div class="page">
+
+    <p class="report-eyebrow">security_review("agglayer")</p>
+    <h1 class="report-title">AggLayer <span>Vault Bridge</span></h1>
+    <p class="report-sub">
+        Independent security assessment · Cantina · May 2026<br>
+        Yield-bearing cross-chain bridge vault (USDC, USDT, WBTC, USDS, ETH) on Ethereum mainnet.
+        3,039 lines of Solidity reviewed across 7 contracts.
+    </p>
+
+    <!-- Stats -->
+    <div class="stat-bar">
+        <div class="stat">
+            <span class="stat-label">HIGH</span>
+            <span class="stat-val red">2</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">MEDIUM</span>
+            <span class="stat-val orange">3</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">LOW</span>
+            <span class="stat-val yellow">5</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">INFO</span>
+            <span class="stat-val">3</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">TOTAL FINDINGS</span>
+            <span class="stat-val">13</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">LINES REVIEWED</span>
+            <span class="stat-val">3,039</span>
+        </div>
+    </div>
+
+    <!-- Severity chips -->
+    <div class="severity-row">
+        <span class="sev-chip high">H-01 · Proxy Takeover via Unprotected reinitialize</span>
+        <span class="sev-chip high">H-02 · Unlimited Approval to Arbitrary Address</span>
+        <span class="sev-chip medium">M-01 · Cross-chain Redemption Permanently Broken</span>
+        <span class="sev-chip medium">M-02 · No Timelock on Critical Governance Functions</span>
+        <span class="sev-chip medium">M-03 · Yield Oracle Manipulation → vbToken Over-minting</span>
+        <span class="sev-chip low">L-01 · CEI Violation in _withdraw</span>
+        <span class="sev-chip low">L-02 · burn() Reverts on yieldRecipient vbTokens</span>
+        <span class="sev-chip low">L-03 · Auto-rebalance Silently Disabled</span>
+        <span class="sev-chip low">L-04 · setCustomToken Permanently Blocked</span>
+        <span class="sev-chip low">L-05 · migrationFeesFund Permanently Locked</span>
+        <span class="sev-chip info">I-01 · Catch Block Assumes Fixed Revert Format</span>
+        <span class="sev-chip info">I-02 · NatSpec Inaccuracy on setYieldRecipient</span>
+        <span class="sev-chip info">I-03 · Directly Transferred Tokens Unrecoverable</span>
+    </div>
+
+    <!-- Download -->
+    <a href="./agglayer_vaultbridge_security_review.pdf" download class="dl-btn">
+        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        [ DOWNLOAD REPORT PDF ]
+    </a>
+
+    <!-- Embedded PDF -->
+    <div class="pdf-wrap">
+        <iframe
+            class="pdf-embed"
+            src="./agglayer_vaultbridge_security_review.pdf"
+            title="AggLayer Vault Bridge Security Review">
+        </iframe>
+    </div>
+
+</div>
+
+<footer>
+    <p>built by prameya &amp; claude &nbsp;·&nbsp; 2026</p>
+</footer>
+
+<script>
+    const cur = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => {
+        cur.style.left = e.clientX + 'px';
+        cur.style.top  = e.clientY + 'px';
+    });
+    document.querySelectorAll('a, button').forEach(el => {
+        el.addEventListener('mouseenter', () => cur.classList.add('hover'));
+        el.addEventListener('mouseleave', () => cur.classList.remove('hover'));
+    });
+</script>
+
+</body>
+</html>

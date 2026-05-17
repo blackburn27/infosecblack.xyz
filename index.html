@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prameya — blackburn</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:      #060614;
+            --surface: #0d0d2b;
+            --cyan:    #00e5ff;
+            --purple:  #7b2fff;
+            --text:    #ccd6f6;
+            --muted:   #8892b0;
+            --px:      'Press Start 2P', monospace;
+            --mono:    'Share Tech Mono', monospace;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--mono);
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* ── Scanlines ── */
+        .scanlines {
+            position: fixed; inset: 0;
+            pointer-events: none; z-index: 200;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent, transparent 2px,
+                rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px
+            );
+        }
+
+        /* ── Custom cursor ── */
+        #cursor {
+            position: fixed;
+            width: 12px; height: 12px;
+            background: var(--cyan);
+            pointer-events: none; z-index: 9999;
+            transform: translate(-50%,-50%);
+            image-rendering: pixelated;
+            transition: background 0.1s, transform 0.05s;
+        }
+        #cursor.hover { background: var(--purple); transform: translate(-50%,-50%) scale(1.5); }
+
+        /* ── Loader ── */
+        #loader {
+            position: fixed; inset: 0; z-index: 5000;
+            background: var(--bg);
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 24px;
+            transition: opacity 0.5s;
+        }
+        #loader.hidden { opacity: 0; pointer-events: none; }
+        .loader-text {
+            font-family: var(--px);
+            font-size: 0.7rem;
+            color: var(--cyan);
+            letter-spacing: 4px;
+        }
+        .loader-bar-wrap {
+            width: 200px; height: 8px;
+            border: 2px solid var(--cyan);
+        }
+        .loader-bar {
+            height: 100%;
+            background: var(--cyan);
+            width: 0;
+            animation: load 1.2s steps(20) forwards;
+        }
+        @keyframes load { to { width: 100%; } }
+
+        /* ── Nav ── */
+        nav {
+            position: fixed; top: 0; width: 100%;
+            padding: 22px 50px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100;
+            background: rgba(6,6,20,0.88);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,229,255,0.06);
+        }
+        .nav-logo {
+            font-family: var(--px);
+            font-size: 1.1rem;
+            color: var(--cyan);
+            text-decoration: none;
+        }
+        .nav-logo span { color: var(--purple); }
+        .nav-links {
+            display: flex; align-items: center; gap: 28px; list-style: none;
+        }
+        .nav-links a {
+            font-family: var(--px); font-size: 0.5rem;
+            color: var(--text); text-decoration: none;
+            transition: color 0.2s;
+        }
+        .nav-links a .n { color: var(--cyan); margin-right: 5px; }
+        .nav-links a:hover { color: var(--cyan); }
+        .nav-resume {
+            font-family: var(--px); font-size: 0.48rem;
+            color: var(--cyan);
+            border: 2px solid var(--cyan);
+            padding: 10px 16px;
+            text-decoration: none;
+            box-shadow: 3px 3px 0 var(--purple);
+            transition: all 0.15s;
+        }
+        .nav-resume:hover {
+            background: rgba(0,229,255,0.08);
+            box-shadow: 5px 5px 0 var(--purple);
+            transform: translate(-2px,-2px);
+        }
+
+        /* ── Sidebars ── */
+        .sidebar {
+            position: fixed; bottom: 0; z-index: 50;
+            display: flex; flex-direction: column; align-items: center; gap: 14px;
+        }
+        .sidebar::after {
+            content: ''; display: block;
+            width: 2px; height: 80px;
+            background: var(--muted); margin-top: 6px;
+        }
+        .sidebar-left { left: 38px; }
+        .sidebar-right { right: 38px; }
+        .sidebar a { color: var(--muted); text-decoration: none; transition: color 0.2s, transform 0.2s; }
+        .sidebar a:hover { color: var(--cyan); transform: translateY(-3px); }
+        .sidebar svg { width: 19px; height: 19px; fill: currentColor; display: block; }
+        .sidebar-right a {
+            font-family: var(--px); font-size: 0.42rem;
+            writing-mode: vertical-rl; letter-spacing: 3px;
+        }
+
+        /* ── Main ── */
+        main { padding: 0 160px; }
+
+        /* ── Hero ── */
+        #hero {
+            min-height: 100vh;
+            display: flex; flex-direction: column; justify-content: center;
+            padding-top: 80px; position: relative;
+        }
+        .hero-init {
+            font-family: var(--px); font-size: 0.62rem;
+            color: var(--cyan); margin-bottom: 22px; letter-spacing: 2px;
+        }
+        .hero-init::before { content: '> '; color: var(--purple); }
+        .hero-name {
+            font-family: var(--px); font-size: 3.8rem;
+            color: var(--text); margin-bottom: 12px; line-height: 1.15;
+        }
+        .hero-tag {
+            font-family: var(--px); font-size: 1.5rem;
+            color: var(--muted); margin-bottom: 28px; line-height: 1.6;
+        }
+        .hero-tag .hl { color: var(--purple); }
+        .hero-desc {
+            font-size: 1rem; color: var(--muted);
+            max-width: 480px; line-height: 1.9; margin-bottom: 40px;
+        }
+
+        /* ── MMX city canvas (fixed full-screen) ── */
+        #mmx-bg {
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 1; pointer-events: none;
+            mask-image: linear-gradient(90deg, rgba(0,0,0,0.07) 0%, rgba(0,0,0,0.12) 38%, rgba(0,0,0,0.6) 52%, black 66%);
+            -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,0.07) 0%, rgba(0,0,0,0.12) 38%, rgba(0,0,0,0.6) 52%, black 66%);
+            transition: opacity 0.5s;
+        }
+        /* ── MMX character image ── */
+        #mmx-char {
+            position: fixed; bottom: 0; right: 6%;
+            height: 88vh; width: auto;
+            z-index: 2; pointer-events: none;
+            image-rendering: pixelated;
+            filter: drop-shadow(0 0 24px rgba(0,229,255,0.55)) drop-shadow(0 0 50px rgba(30,85,245,0.25));
+            transition: opacity 0.5s;
+        }
+        /* Sections block the fixed canvas when scrolled */
+        section:not(#hero), footer {
+            background: var(--bg);
+            position: relative; z-index: 10;
+        }
+        /* Hero content sits above canvas/char */
+        .hero-content { position: relative; z-index: 10; }
+        /* ── MMX HP bar ── */
+        .mmx-hp { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+        .mmx-hp-label {
+            font-family: var(--px); font-size: 0.42rem;
+            color: var(--cyan); letter-spacing: 3px;
+        }
+        .mmx-hp-track {
+            width: 160px; height: 10px;
+            border: 2px solid rgba(0,229,255,0.35);
+            padding: 2px; background: rgba(0,0,0,0.4);
+        }
+        .mmx-hp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--cyan), var(--purple));
+            animation: mmxHp 4s steps(16) infinite alternate;
+        }
+        @keyframes mmxHp { from { width: 90%; } to { width: 66%; } }
+
+        /* ── Pixel button ── */
+        .px-btn {
+            display: inline-block;
+            font-family: var(--px); font-size: 0.52rem;
+            color: var(--cyan); border: 2px solid var(--cyan);
+            padding: 14px 22px; text-decoration: none;
+            box-shadow: 4px 4px 0 var(--purple);
+            transition: all 0.15s; letter-spacing: 1px;
+        }
+        .px-btn:hover {
+            background: rgba(0,229,255,0.07);
+            box-shadow: 6px 6px 0 var(--purple);
+            transform: translate(-2px,-2px);
+        }
+
+        /* ── Hero content wrapper ── */
+        .hero-content {
+            position: relative; z-index: 2;
+            max-width: 560px;
+        }
+
+        /* ── Sections ── */
+        section { padding: 80px 0; max-width: 900px; }
+
+        .sec-title {
+            font-family: var(--px); font-size: 0.9rem;
+            color: var(--text);
+            display: flex; align-items: center; gap: 16px;
+            margin-bottom: 48px; white-space: nowrap;
+        }
+        .sec-title .n { color: var(--cyan); font-size: 0.68rem; }
+        .sec-title::after {
+            content: ''; display: block;
+            height: 1px; width: 220px;
+            background: rgba(0,229,255,0.15);
+        }
+
+        /* ── About ── */
+        .about-grid {
+            display: grid; grid-template-columns: 3fr 2fr; gap: 50px;
+        }
+        .about-text p {
+            color: var(--muted); line-height: 1.85;
+            margin-bottom: 14px; font-size: 0.95rem;
+        }
+        .about-text a { color: var(--cyan); text-decoration: none; }
+        .about-text a:hover { text-decoration: underline; }
+        .tech-list {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 8px; list-style: none; margin-top: 18px;
+        }
+        .tech-list li {
+            font-family: var(--px); font-size: 0.46rem;
+            color: var(--muted); padding-left: 16px; position: relative;
+        }
+        .tech-list li::before {
+            content: '▶'; color: var(--cyan);
+            position: absolute; left: 0;
+            font-size: 0.38rem; top: 3px;
+        }
+        /* pixel avatar box */
+        .px-avatar {
+            width: 100%; aspect-ratio: 1;
+            border: 2px solid var(--cyan);
+            box-shadow: 6px 6px 0 var(--purple);
+            background: var(--surface);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 5rem; position: relative;
+            image-rendering: pixelated;
+        }
+        .px-corner {
+            position: absolute; width: 10px; height: 10px; background: var(--purple);
+        }
+        .px-corner.tl { top:-5px; left:-5px; }
+        .px-corner.tr { top:-5px; right:-5px; }
+        .px-corner.bl { bottom:-5px; left:-5px; }
+        .px-corner.br { bottom:-5px; right:-5px; }
+
+        /* pixel sprite inside avatar */
+        .sprite {
+            display: grid; grid-template-columns: repeat(7,10px);
+            gap: 0; image-rendering: pixelated;
+        }
+        .sprite span {
+            width: 10px; height: 10px; display: block;
+        }
+
+        /* ── Experience ── */
+        .exp-list { display: flex; flex-direction: column; gap: 40px; }
+        .exp-item {
+            border-left: 2px solid rgba(0,229,255,0.18);
+            padding-left: 24px; position: relative;
+        }
+        .exp-item::before {
+            content: ''; position: absolute;
+            left: -5px; top: 5px;
+            width: 8px; height: 8px; background: var(--cyan);
+        }
+        .exp-role {
+            font-family: var(--px); font-size: 0.62rem;
+            color: var(--text); margin-bottom: 6px;
+        }
+        .exp-role span { color: var(--cyan); }
+        .exp-date {
+            font-family: var(--px); font-size: 0.42rem;
+            color: var(--muted); margin-bottom: 14px;
+        }
+        .exp-points { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .exp-points li {
+            color: var(--muted); font-size: 0.9rem;
+            line-height: 1.7; padding-left: 18px; position: relative;
+        }
+        .exp-points li::before {
+            content: '▶'; color: var(--cyan);
+            position: absolute; left: 0;
+            font-size: 0.5rem; top: 5px;
+        }
+
+        /* ── Work ── */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 18px;
+        }
+        .proj-card {
+            background: var(--surface);
+            border: 1px solid rgba(0,229,255,0.12);
+            padding: 26px 22px;
+            box-shadow: 4px 4px 0 rgba(123,47,255,0.25);
+            transition: all 0.18s;
+            position: relative;
+        }
+        .proj-card:hover {
+            border-color: rgba(0,229,255,0.5);
+            box-shadow: 6px 6px 0 var(--purple);
+            transform: translate(-2px,-2px);
+        }
+        .proj-top {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 18px;
+        }
+        .proj-icon { font-size: 1.6rem; }
+        .proj-links { display: flex; gap: 12px; }
+        .proj-links a { color: var(--muted); transition: color 0.2s; }
+        .proj-links a:hover { color: var(--cyan); }
+        .proj-links svg { width: 17px; height: 17px; fill: currentColor; }
+        .proj-name {
+            font-family: var(--px); font-size: 0.58rem;
+            color: var(--text); margin-bottom: 10px; line-height: 1.6;
+        }
+        .proj-desc {
+            font-size: 0.85rem; color: var(--muted);
+            line-height: 1.65; margin-bottom: 18px;
+        }
+        .proj-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+        .tag {
+            font-family: var(--px); font-size: 0.46rem;
+            color: var(--cyan); padding: 6px 11px;
+            border: 1px solid rgba(0,229,255,0.28);
+        }
+
+        /* ── Contact ── */
+        #contact {
+            text-align: center; max-width: 600px;
+            margin: 0 auto; padding: 60px 0 160px;
+        }
+        .contact-sub {
+            font-family: var(--px); font-size: 0.55rem;
+            color: var(--cyan); margin-bottom: 18px;
+        }
+        .contact-h {
+            font-family: var(--px); font-size: 1.8rem;
+            color: var(--text); margin-bottom: 18px; line-height: 1.5;
+        }
+        .contact-p {
+            color: var(--muted); font-size: 0.95rem;
+            line-height: 1.85; margin-bottom: 36px;
+        }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center; padding: 20px;
+            font-family: var(--px); font-size: 0.38rem;
+            color: var(--muted);
+            border-top: 1px solid rgba(0,229,255,0.06);
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--purple); }
+        ::selection { background: rgba(0,229,255,0.18); color: var(--cyan); }
+
+        /* ── Noise grain ── */
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            opacity: 0.025; pointer-events: none; z-index: 1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 180px 180px;
+        }
+
+        /* ── About extras (certs / HOF / ranks) ── */
+        .about-extras { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+        .extras-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .extras-label {
+            font-family: var(--px); font-size: 0.48rem;
+            color: var(--muted); min-width: 60px; flex-shrink: 0;
+        }
+        .extras-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+        .about-extras .tag { font-size: 0.48rem; padding: 6px 12px; }
+        .tag-purple { color: var(--purple) !important; border-color: rgba(123,47,255,0.4) !important; }
+        .tag-gold { color: #ffd700 !important; border-color: rgba(255,215,0,0.35) !important; }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            main { padding: 0 28px; }
+            nav { padding: 18px 28px; }
+            .nav-links li:not(:last-child) { display: none; }
+            .sidebar { display: none; }
+            .hero-name { font-size: 2.2rem; }
+            .hero-tag { font-size: 0.9rem; }
+            #mmx-bg { display: none; }
+            .mmx-hp { display: none; }
+            .about-grid { grid-template-columns: 1fr; }
+            .about-img { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loader">
+    <div class="loader-text">LOADING_PLAYER_DATA...</div>
+    <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+</div>
+
+<!-- Scanlines -->
+<div class="scanlines"></div>
+
+<!-- Custom cursor -->
+<div id="cursor"></div>
+
+<!-- ── Nav ── -->
+<nav>
+    <a href="#hero" class="nav-logo">B<span>_</span></a>
+    <ul class="nav-links">
+        <li><a href="#about"><span class="n">01.</span>About</a></li>
+        <li><a href="#experience"><span class="n">02.</span>Experience</a></li>
+        <li><a href="#work"><span class="n">03.</span>Work</a></li>
+        <li><a href="#contact"><span class="n">04.</span>Contact</a></li>
+        <li><a href="./resume.html" target="_blank" class="nav-resume">Resume</a></li>
+    </ul>
+</nav>
+
+<!-- ── Left sidebar ── -->
+<div class="sidebar sidebar-left">
+    <a href="https://github.com/blackburn27" target="_blank" aria-label="GitHub">
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+    </a>
+    <a href="https://x.com/InfoSecBlack" target="_blank" aria-label="Twitter / X">
+        <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    </a>
+    <a href="https://www.linkedin.com/in/prameya-s-9a38ba1b8/" target="_blank" aria-label="LinkedIn">
+        <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+    </a>
+    <a href="https://t.me/InfoSecBlack" target="_blank" aria-label="Telegram">
+        <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+    </a>
+</div>
+
+<!-- ── Right sidebar ── -->
+<div class="sidebar sidebar-right">
+    <a href="mailto:blackburn0027@gmail.com">blackburn0027@gmail.com</a>
+</div>
+
+<!-- ── Full-screen MMX bg + character (fixed, hidden when not in hero) ── -->
+<canvas id="mmx-bg" aria-hidden="true"></canvas>
+<img id="mmx-char" src="megamanx_final.png" alt="" aria-hidden="true">
+
+<!-- ── Main ── -->
+<main id="content">
+
+    <!-- Hero -->
+    <section id="hero">
+        <div class="hero-content">
+            <p class="hero-init">player_init("prameya")</p>
+            <h1 class="hero-name">Prameya.</h1>
+            <h2 class="hero-tag">web2 pentester. web3 auditor. <span class="hl">exploit both.</span></h2>
+            <p class="hero-desc">
+                Security researcher breaking web apps and auditing smart contracts.
+                Pentester by day, competitive auditor by night —
+                hunting bugs across the full stack.
+            </p>
+            <div class="mmx-hp" aria-hidden="true">
+                <span class="mmx-hp-label">HP</span>
+                <div class="mmx-hp-track"><div class="mmx-hp-fill"></div></div>
+            </div>
+            <a href="#work" class="px-btn">[ VIEW MY WORK ]</a>
+        </div>
+    </section>
+
+    <!-- About -->
+    <section id="about">
+        <h3 class="sec-title"><span class="n">01.</span> About Me</h3>
+        <div class="about-grid">
+            <div class="about-text">
+                <p>
+                    Hey! I'm Prameya — a security researcher operating across both web2 and web3.
+                    My background is in application pentesting, covering web, iOS and Android assessments.
+                </p>
+                <p>
+                    More recently I've gone deep into the smart contract auditing world — competing on
+                    <a href="https://codehawks.com" target="_blank">CodeHawks</a>,
+                    <a href="https://code4rena.com" target="_blank">Code4rena</a>, and
+                    <a href="https://cantina.xyz" target="_blank">Cantina</a>.
+                    I hunt logic bugs in state machines, async L1 patterns, and cross-contract flows.
+                </p>
+                <p>
+                    My audit approach is simple: understand the codebase deeper than anyone else — read every assumption, trace every state transition, and take nothing at face value.
+                </p>
+                <p>A few things I work with:</p>
+                <ul class="tech-list">
+                    <li>Burp Suite Pro</li>
+                    <li>Solidity</li>
+                    <li>Foundry</li>
+                    <li>Web App Pentesting</li>
+                    <li>Smart Contract Auditing</li>
+                    <li>iOS &amp; APK Testing</li>
+                </ul>
+                <div class="about-extras">
+                    <div class="extras-row">
+                        <span class="extras-label">Certs</span>
+                        <div class="extras-tags">
+                            <span class="tag tag-purple">CDP</span>
+                            <span class="tag tag-purple">eWPTX</span>
+                            <span class="tag tag-purple">eCPPT v2</span>
+                        </div>
+                    </div>
+                    <div class="extras-row">
+                        <span class="extras-label">HOF</span>
+                        <div class="extras-tags">
+                            <span class="tag tag-gold">Microsoft</span>
+                            <span class="tag tag-gold">IBM</span>
+                            <span class="tag tag-gold">Floriday</span>
+                        </div>
+                    </div>
+                    <div class="extras-row">
+                        <span class="extras-label">Ranks</span>
+                        <div class="extras-tags">
+                            <span class="tag">HTB: Pro Hacker</span>
+                            <span class="tag">THM: 0x9 OMNI</span>
+                            <span class="tag">CodeHawks: #310</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="about-img">
+                <div class="px-avatar">
+                    <div class="px-corner tl"></div>
+                    <div class="px-corner tr"></div>
+                    <div class="px-corner bl"></div>
+                    <div class="px-corner br"></div>
+                    <!-- tiny pixel-art skull sprite -->
+                    <div class="sprite" style="transform:scale(2.2)">
+                        <span style="background:transparent"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:transparent"></span>
+
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--bg)"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--bg)"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--bg)"></span>
+                        <span style="background:var(--cyan)"></span>
+
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--purple)"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--purple)"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--purple)"></span>
+                        <span style="background:var(--cyan)"></span>
+
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--bg)"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--bg)"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--bg)"></span>
+                        <span style="background:var(--cyan)"></span>
+
+                        <span style="background:transparent"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--bg)"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--bg)"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:transparent"></span>
+
+                        <span style="background:transparent"></span>
+                        <span style="background:transparent"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:var(--cyan)"></span>
+                        <span style="background:transparent"></span>
+                        <span style="background:transparent"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience -->
+    <section id="experience">
+        <h3 class="sec-title"><span class="n">02.</span> Experience</h3>
+        <div class="exp-list">
+
+            <div class="exp-item">
+                <div class="exp-role">Senior Consultant — Offensive Security <span>@ NetSentries</span></div>
+                <div class="exp-date">Sep 2024 — Present</div>
+                <ul class="exp-points">
+                    <li>Lead Consultant across multiple simultaneous enterprise engagements, owning end-to-end delivery including scoping, execution, and executive-level reporting.</li>
+                    <li>Reported 1,000+ Early Notifications (ENs) of Critical/High severity findings across the client portfolio; designated specialist on low-yield engagements to surface vulnerabilities where others found none.</li>
+                    <li>Lead all Production Security assessments across client accounts, ensuring continuous security posture coverage for critical infrastructure.</li>
+                    <li>Level-1 Reviewer for all trackers and pentest reports across the team, maintaining delivery quality and consistency.</li>
+                </ul>
+            </div>
+
+            <div class="exp-item">
+                <div class="exp-role">Consultant — Offensive Security <span>@ NetSentries</span></div>
+                <div class="exp-date">Sep 2023 — Sep 2024</div>
+                <ul class="exp-points">
+                    <li>Delivered impact-focused grey-box penetration tests specializing in web application and API security, consistently uncovering Critical and High severity vulnerabilities across enterprise client environments.</li>
+                    <li>Engineered internal automation tooling and conducted R&amp;D to streamline the grey-box web application testing workflow, reducing manual overhead for the offensive security team.</li>
+                    <li>Expanded assessment coverage to iOS and Android mobile platforms, broadening the team's cross-platform offensive testing capability.</li>
+                </ul>
+            </div>
+
+            <div class="exp-item">
+                <div class="exp-role">Associate Consultant — Offensive Security <span>@ NetSentries</span></div>
+                <div class="exp-date">Apr 2023 — Sep 2023</div>
+                <ul class="exp-points">
+                    <li>Conducted grey-box penetration tests across web applications, REST APIs, Android/iOS mobile apps, and thick client applications for multiple enterprise clients.</li>
+                    <li>Developed hands-on proficiency across the full offensive assessment lifecycle — from threat modelling and attack surface enumeration through to exploitation and remediation reporting.</li>
+                </ul>
+            </div>
+
+            <div class="exp-item">
+                <div class="exp-role">Competitive Smart Contract Auditor <span>@ CodeHawks / Cantina / Code4rena</span></div>
+                <div class="exp-date">2026 — Present</div>
+                <ul class="exp-points">
+                    <li>Top 10 finish — SNARKling First Flight (CodeHawks, 2026) · 8/10 valid findings, 6 unique high-impact vulnerabilities.</li>
+                    <li>Independent security review of AggLayer Vault Bridge (Cantina) — 2 High, 3 Medium, 5 Low findings across 3,039 lines; focus areas: proxy security, oracle manipulation, cross-chain settlement.</li>
+                    <li>CodeHawks First Flights Rank #310 (XP: 866). PoC development with Foundry.</li>
+                </ul>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Work -->
+    <section id="work">
+        <h3 class="sec-title"><span class="n">03.</span> Work</h3>
+        <div class="projects-grid">
+
+            <!-- 1. Reserve Governor -->
+            <div class="proj-card">
+                <div class="proj-top">
+                    <span class="proj-icon">🏛️</span>
+                    <div class="proj-links">
+                        <a href="./reserve-governor-report.html" target="_blank" aria-label="Report">
+                            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/></svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="proj-name">Reserve Governor — Security Review</div>
+                <p class="proj-desc">Independent security assessment of Reserve Governor — a hybrid optimistic/pessimistic governance system on OpenZeppelin Governor v5. 2,742 lines across 9 contracts. Identified 1 High (governance DoS), 1 Medium, 7 Low, 3 Informational findings. Co-audited with MuscleFreak92 on Cantina.</p>
+                <div class="proj-tags">
+                    <span class="tag">Solidity</span>
+                    <span class="tag">Cantina</span>
+                    <span class="tag">1H · 1M · 7L</span>
+                    <span class="tag">Governance</span>
+                    <span class="tag">May 2026</span>
+                </div>
+            </div>
+
+            <!-- 2. AggLayer -->
+            <div class="proj-card">
+                <div class="proj-top">
+                    <span class="proj-icon">🔗</span>
+                    <div class="proj-links">
+                        <a href="./agglayer-report.html" target="_blank" aria-label="Report">
+                            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/></svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="proj-name">AggLayer Vault Bridge — Security Review</div>
+                <p class="proj-desc">Independent security assessment of Polygon's AggLayer Vault Bridge — a yield-bearing cross-chain bridge (USDC, USDT, WBTC, ETH). 3,039 lines reviewed across 7 contracts. Identified 2 High, 3 Medium, 5 Low, 3 Informational findings including proxy takeover via unprotected reinitialize, unlimited approval grants, and permanently broken cross-chain redemption.</p>
+                <div class="proj-tags">
+                    <span class="tag">Solidity</span>
+                    <span class="tag">Cantina</span>
+                    <span class="tag">2H · 3M · 5L</span>
+                    <span class="tag">Cross-chain</span>
+                    <span class="tag">May 2026</span>
+                </div>
+            </div>
+
+            <!-- 3. SNARKeling -->
+            <div class="proj-card">
+                <div class="proj-top">
+                    <span class="proj-icon">🔍</span>
+                    <div class="proj-links">
+                        <a href="./snarkeling-report.html" target="_blank" aria-label="Report">
+                            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/></svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="proj-name">SNARKeling Treasure Hunt — Security Review</div>
+                <p class="proj-desc">Smart contract &amp; ZK circuit audit on CodeHawks First Flight — ranked 8th. ~220 NSLOC across Solidity contract, Noir ZK circuit, and deploy script. Identified 2 High findings independently allowing complete drain of the 100 ETH prize pool via proof replay and exposed secrets.</p>
+                <div class="proj-tags">
+                    <span class="tag">Solidity</span>
+                    <span class="tag">Noir / ZK</span>
+                    <span class="tag">2H · 1M · 5L</span>
+                    <span class="tag">CodeHawks</span>
+                    <span class="tag">May 2026</span>
+                </div>
+            </div>
+
+            <!-- 4. Monetrix -->
+            <div class="proj-card">
+                <div class="proj-top">
+                    <span class="proj-icon">⛓️</span>
+                    <div class="proj-links"></div>
+                </div>
+                <div class="proj-name">Monetrix Audit</div>
+                <p class="proj-desc">Competitive audit on Cantina ($22K pool) — yield stablecoin protocol on Hyperliquid. Submitted 1 HIGH + full QA report.</p>
+                <div class="proj-tags">
+                    <span class="tag">Solidity</span>
+                    <span class="tag">Cantina</span>
+                    <span class="tag">DeFi</span>
+                    <span class="tag">Hyperliquid</span>
+                </div>
+            </div>
+
+            <!-- 5. Web2 -->
+            <div class="proj-card">
+                <div class="proj-top">
+                    <span class="proj-icon">🌐</span>
+                    <div class="proj-links"></div>
+                </div>
+                <div class="proj-name">Web2 Pentest Work</div>
+                <p class="proj-desc">Black-box and grey-box web app, iOS and Android assessments for enterprise clients. Multiple engagements — reach out if you want to know more.</p>
+                <div class="proj-tags">
+                    <span class="tag">Web AppSec</span>
+                    <span class="tag">iOS</span>
+                    <span class="tag">Android</span>
+                    <span class="tag">Burp Pro</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact">
+        <p class="contact-sub">04. What's Next?</p>
+        <h3 class="contact-h">Get In Touch</h3>
+        <p class="contact-p">
+            Whether it's a security engagement, an audit collab, or just a chat about
+            breaking things — my inbox is open.
+        </p>
+        <a href="mailto:blackburn0027@gmail.com" class="px-btn">[ SAY HELLO ]</a>
+    </section>
+
+</main>
+
+<footer>
+    <p>built by prameya &amp; claude &nbsp;·&nbsp; 2026</p>
+</footer>
+
+<script>
+    // ── Loader ──
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.getElementById('loader').classList.add('hidden');
+        }, 1400);
+    });
+
+    // ── Custom cursor ──
+    const cur = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => {
+        cur.style.left = e.clientX + 'px';
+        cur.style.top  = e.clientY + 'px';
+    });
+    document.querySelectorAll('a, button').forEach(el => {
+        el.addEventListener('mouseenter', () => cur.classList.add('hover'));
+        el.addEventListener('mouseleave', () => cur.classList.remove('hover'));
+    });
+
+    // ── Nav active highlight on scroll ──
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                navLinks.forEach(a => a.style.color = '');
+                const active = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
+                if (active) active.style.color = 'var(--cyan)';
+            }
+        });
+    }, { threshold: 0.5 });
+    sections.forEach(s => observer.observe(s));
+
+    // ── MMX city background canvas ──
+    (function () {
+        const canvas = document.getElementById('mmx-bg');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const G = 4;
+
+        const C = {
+            sky0: '#000308', sky1: '#020f20',
+            bFar:  '#2d5499', bMid:  '#1e3f7a', bNear: '#050c18',
+            winC: '#00e5ff', winW: '#aaccff', winD: '#1e4488',
+            star: '#88aadd', ground: '#0a1525'
+        };
+
+        let W = 0, H = 0, layers = {}, stars = [], particles = [];
+
+        function lcg(seed) {
+            let s = seed | 0;
+            return () => { s = Math.imul(1664525, s) + 1013904223 | 0; return (s >>> 0) / 4294967296; };
+        }
+        const snap = n => Math.floor(n / G) * G;
+
+        function makeLayer(seed, wMin, wMax, hLo, hHi, gap, hasWins) {
+            const r = lcg(seed), bs = [];
+            let x = snap(-r() * wMax);
+            while (x < W + wMax) {
+                const w = snap(wMin + r() * (wMax - wMin));
+                const h = snap(H * (hLo + r() * (hHi - hLo)));
+                const by = H - h, wins = [];
+                if (hasWins) {
+                    for (let wy = by + G * 3; wy < H - G * 2; wy += G * 4)
+                        for (let wx = x + G * 2; wx < x + w - G; wx += G * 3) {
+                            const roll = r();
+                            if (roll > 0.42) wins.push({ x: snap(wx), y: snap(wy), col: roll > 0.85 ? C.winC : roll > 0.65 ? C.winW : C.winD });
+                        }
+                }
+                bs.push({ x: snap(x), y: by, w, wins });
+                x += w + snap(r() * gap);
+            }
+            return bs;
+        }
+
+        function init() {
+            W = canvas.width  = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+            layers.far  = makeLayer(11, 44,  88,  0.20, 0.38, 10, true);
+            layers.mid  = makeLayer(22, 70, 145, 0.32, 0.55, 14, true);
+            layers.near = makeLayer(33, 95, 210, 0.18, 0.32,  8, false);
+            const sr = lcg(9);
+            stars = Array.from({ length: 90 }, () => ({
+                x: snap(sr() * W), y: snap(sr() * H * 0.65),
+                phase: sr() * Math.PI * 2, rate: 0.6 + sr() * 3
+            }));
+            const pr = lcg(7);
+            particles = Array.from({ length: 14 }, () => ({
+                x: pr() * W, y: pr() * H,
+                vx: (pr() - 0.5) * 0.5, vy: -(0.1 + pr() * 0.3),
+                size: G * (1 + Math.floor(pr() * 2)), phase: pr() * Math.PI * 2
+            }));
+        }
+
+        function drawLayer(bs, col) {
+            ctx.fillStyle = col;
+            bs.forEach(b => {
+                ctx.fillRect(b.x, b.y, b.w, H - b.y);
+                b.wins.forEach(w => { ctx.fillStyle = w.col; ctx.fillRect(w.x, w.y, G, G * 2); ctx.fillStyle = col; });
+            });
+        }
+
+        function draw(t) {
+            const ts = t * 0.001;
+            const sky = ctx.createLinearGradient(0, 0, 0, H);
+            sky.addColorStop(0, C.sky0); sky.addColorStop(1, C.sky1);
+            ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+
+            // stars
+            stars.forEach(s => {
+                ctx.globalAlpha = 0.15 + 0.7 * (0.5 + 0.5 * Math.sin(s.phase + ts * s.rate));
+                ctx.fillStyle = C.star;
+                ctx.fillRect(s.x, s.y, 2, 2);
+            });
+            ctx.globalAlpha = 1;
+
+            drawLayer(layers.far, C.bFar);
+            drawLayer(layers.mid, C.bMid);
+
+            // floating energy capsule particles
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.y < -20) { p.y = H + 10; p.x = Math.random() * W; }
+                if (p.x < -10) p.x = W + 10;
+                if (p.x > W + 10) p.x = -10;
+                const a = 0.3 + 0.6 * (0.5 + 0.5 * Math.sin(p.phase + ts * 2.2));
+                const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 6);
+                grd.addColorStop(0, 'rgba(0,229,255,0.45)'); grd.addColorStop(1, 'rgba(0,229,255,0)');
+                ctx.globalAlpha = a; ctx.fillStyle = grd;
+                ctx.fillRect(p.x - p.size*6, p.y - p.size*6, p.size*12, p.size*12);
+                ctx.fillStyle = '#fff'; ctx.globalAlpha = Math.min(a * 1.8, 1);
+                ctx.fillRect(snap(p.x), snap(p.y), p.size, p.size);
+                ctx.globalAlpha = 1;
+            });
+
+            // near building silhouette
+            ctx.fillStyle = C.bNear;
+            layers.near.forEach(b => ctx.fillRect(b.x, b.y, b.w, H - b.y));
+
+            // ground platform glow
+            ctx.fillStyle = C.ground; ctx.fillRect(0, H - G * 2, W, G * 2);
+            ctx.globalAlpha = 0.5; ctx.fillStyle = C.winC; ctx.fillRect(0, H - G * 2, W, 1);
+            ctx.globalAlpha = 1;
+        }
+
+        let lastVW = 0;
+        function loop(t) {
+            if (Math.abs(window.innerWidth - lastVW) > 2) { init(); lastVW = window.innerWidth; }
+            draw(t);
+            requestAnimationFrame(loop);
+        }
+
+        requestAnimationFrame(() => { init(); lastVW = window.innerWidth; requestAnimationFrame(loop); });
+
+        // Hide bg + char when hero scrolls out of view
+        const heroEl = document.getElementById('hero');
+        const bgEl   = document.getElementById('mmx-bg');
+        const charEl = document.getElementById('mmx-char');
+        new IntersectionObserver(([e]) => {
+            const vis = e.isIntersecting;
+            bgEl.style.opacity   = vis ? '1' : '0';
+            charEl.style.opacity = vis ? '1' : '0';
+        }, { threshold: 0.05 }).observe(heroEl);
+    })();
+</script>
+</body>
+</html>

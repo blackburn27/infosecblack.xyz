@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prameya S. — Resume</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
+    font-size: 10.5pt;
+    color: #1a1a1a;
+    background: #fff;
+    line-height: 1.45;
+  }
+
+  .page {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 32px 40px 32px 40px;
+  }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 14px; }
+
+  .header h1 {
+    font-size: 22pt;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #111;
+    margin-bottom: 5px;
+  }
+
+  .contact-line {
+    font-size: 9.5pt;
+    color: #444;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0 14px;
+  }
+
+  .contact-line a { color: #444; text-decoration: none; }
+  .contact-line a:hover { text-decoration: underline; }
+  .contact-line span { color: #bbb; }
+
+  /* ── Divider ── */
+  hr {
+    border: none;
+    border-top: 1.5px solid #222;
+    margin: 10px 0 8px;
+  }
+
+  /* ── Section heading ── */
+  .section-title {
+    font-size: 10pt;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #111;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 2px;
+    margin-bottom: 9px;
+    margin-top: 14px;
+  }
+
+  /* ── Experience block ── */
+  .job { margin-bottom: 12px; }
+
+  .job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .job-title {
+    font-weight: 700;
+    font-size: 10.5pt;
+  }
+
+  .job-company {
+    font-style: italic;
+    color: #444;
+    font-size: 10pt;
+    margin-left: 4px;
+  }
+
+  .job-date {
+    font-size: 9.5pt;
+    color: #555;
+    white-space: nowrap;
+    margin-left: 8px;
+  }
+
+  .job ul {
+    margin-top: 4px;
+    padding-left: 16px;
+  }
+
+  .job ul li {
+    margin-bottom: 3px;
+    font-size: 10pt;
+  }
+
+  /* ── Skills grid ── */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 32px;
+    font-size: 10pt;
+  }
+
+  .skills-grid .skill-row {
+    display: flex;
+    gap: 6px;
+  }
+
+  .skill-row::before {
+    content: "▸";
+    color: #555;
+    flex-shrink: 0;
+  }
+
+  /* ── Additional info ── */
+  .info-line { font-size: 10pt; margin-bottom: 4px; }
+  .info-line strong { color: #111; }
+
+  /* ── Education block ── */
+  .edu { margin-bottom: 8px; }
+  .edu-header { display: flex; justify-content: space-between; align-items: baseline; }
+  .edu-inst { font-weight: 700; font-size: 10.5pt; }
+  .edu-date { font-size: 9.5pt; color: #555; }
+  .edu-detail { font-size: 10pt; color: #333; margin-top: 2px; }
+
+  /* ── Print ── */
+  @page { margin: 0; }
+  @media print {
+    body { background: white; }
+    .page { padding: 20px 32px; }
+    a { color: #333 !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>PRAMEYA SINGH SONI</h1>
+    <div class="contact-line">
+      <a href="mailto:blackburn0027@gmail.com">blackburn0027@gmail.com</a>
+      <span>|</span>
+      <a href="https://www.linkedin.com/in/prameya-s-9a38ba1b8/" target="_blank">linkedin.com/in/prameya-s</a>
+      <span>|</span>
+      <a href="https://github.com/blackburn27" target="_blank">github.com/blackburn27</a>
+      <span>|</span>
+      <a href="https://x.com/InfoSecBlack" target="_blank">x.com/InfoSecBlack</a>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- PROFESSIONAL EXPERIENCE -->
+  <div class="section-title">Professional Experience</div>
+
+  <div class="job">
+    <div class="job-header">
+      <div>
+        <span class="job-title">Senior Consultant — Offensive Security</span>
+        <span class="job-company">NetSentries</span>
+      </div>
+      <div class="job-date">Sep 2024 — Present</div>
+    </div>
+    <ul>
+      <li>Lead Consultant across multiple simultaneous enterprise engagements, owning end-to-end delivery including scoping, execution, and executive-level reporting.</li>
+      <li>Reported 1,000+ Early Notifications (ENs) of Critical/High severity findings across the client portfolio; designated specialist on low-yield engagements to surface high-impact vulnerabilities where others found none.</li>
+      <li>Lead all Production Security assessments across client accounts, ensuring continuous security posture coverage for critical infrastructure.</li>
+      <li>Designated Level-1 Reviewer for all trackers and pentest reports across the team, maintaining delivery quality and consistency.</li>
+    </ul>
+  </div>
+
+  <div class="job">
+    <div class="job-header">
+      <div>
+        <span class="job-title">Consultant — Offensive Security</span>
+        <span class="job-company">NetSentries</span>
+      </div>
+      <div class="job-date">Sep 2023 — Sep 2024</div>
+    </div>
+    <ul>
+      <li>Delivered impact-focused grey-box penetration tests specializing in web application and API security, consistently uncovering Critical and High severity vulnerabilities across enterprise client environments.</li>
+      <li>Engineered internal automation tooling and conducted R&D to streamline the grey-box web application testing workflow, reducing manual overhead for the wider offensive security team.</li>
+      <li>Expanded assessment coverage to iOS and Android mobile platforms, broadening the team's cross-platform offensive testing capability.</li>
+    </ul>
+  </div>
+
+  <div class="job">
+    <div class="job-header">
+      <div>
+        <span class="job-title">Associate Consultant — Offensive Security</span>
+        <span class="job-company">NetSentries</span>
+      </div>
+      <div class="job-date">Apr 2023 — Sep 2023</div>
+    </div>
+    <ul>
+      <li>Conducted grey-box penetration tests across web applications, REST APIs, Android/iOS mobile apps, and thick client applications for multiple enterprise clients.</li>
+      <li>Developed hands-on proficiency across the full offensive assessment lifecycle — from threat modelling and attack surface enumeration through to exploitation and remediation reporting.</li>
+    </ul>
+  </div>
+
+  <!-- TECHNICAL SKILLS -->
+  <div class="section-title">Technical Skills</div>
+
+  <div class="skills-grid">
+    <div class="skill-row">Web Application &amp; API Pentesting</div>
+    <div class="skill-row">Smart Contract Auditing (Solidity, Foundry)</div>
+    <div class="skill-row">Mobile Pentesting (iOS &amp; Android)</div>
+    <div class="skill-row">CI/CD, Docker, Kubernetes</div>
+    <div class="skill-row">Thick Client Pentesting</div>
+    <div class="skill-row">IaC (Terraform, GitHub Actions)</div>
+    <div class="skill-row">Programming (Python, Bash)</div>
+    <div class="skill-row">Threat Modeling &amp; Incident Response</div>
+  </div>
+
+  <!-- ADDITIONAL INFORMATION -->
+  <div class="section-title">Additional Information</div>
+
+  <div class="info-line">
+    <strong>Tools:</strong> Burp Suite Pro, Metasploit, Frida, Objection, SAST/DAST/SCA, Foundry, Jenkins, Ansible
+  </div>
+  <div class="info-line">
+    <strong>Certifications:</strong> CDP, eWPTX, eCPPT v2
+  </div>
+  <div class="info-line">
+    <strong>Security Research:</strong> HTB Rank: Pro Hacker &nbsp;|&nbsp; TryHackMe Rank: 0x9 OMNI &nbsp;|&nbsp; Hall of Fame: Microsoft, IBM, Floriday
+  </div>
+  <div class="info-line">
+    <strong>Web3 / Smart Contract Security:</strong> Competitive auditor on CodeHawks, Cantina, and Code4rena — audited protocols including Reserve Governor and AggLayer; CodeHawks First Flights Rank #310 (XP: 866); research focus areas: reentrancy, oracle manipulation, front-running, cross-chain settlement.
+  </div>
+
+  <!-- EDUCATION -->
+  <div class="section-title">Education</div>
+
+  <div class="edu">
+    <div class="edu-header">
+      <span class="edu-inst">Rajiv Gandhi Institute of Petroleum Technology</span>
+      <span class="edu-date">2017 — 2021</span>
+    </div>
+    <div class="edu-detail">B.Tech. in Petroleum Engineering &nbsp;|&nbsp; CGPA: 8.08</div>
+    <div class="edu-detail">Chapter Lead, OWASP RGIPT &nbsp;|&nbsp; Technical Supervisor, IEEE RGIPT</div>
+  </div>
+
+</div>
+</body>
+</html>
