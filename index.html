@@ -666,6 +666,7 @@
                 <ul class="exp-points">
                     <li>Top 10 finish — SNARKling First Flight (CodeHawks, 2026) · 8/10 valid findings, 6 unique high-impact vulnerabilities.</li>
                     <li>Independent security review of AggLayer Vault Bridge (Cantina) — 2 High, 3 Medium, 5 Low findings across 3,039 lines; focus areas: proxy security, oracle manipulation, cross-chain settlement.</li>
+                    <li>Bug bounty — Ripio (HackerOne #3739970): discovered CC-1 cross-chain double-mint in <code>BridgeDeposit.sol</code>, CVSS 8.9 High. Responsible disclosures to Celer cBridge and Brevis Network via GitHub Security Advisories.</li>
                     <li>CodeHawks First Flights Rank #310 (XP: 866). PoC development with Foundry.</li>
                 </ul>
             </div>
@@ -752,40 +753,61 @@
                     </div>
                 </div>
                 <div class="proj-name">Bridge Bug Detector — Static Analysis Tool</div>
-                <p class="proj-desc">Python CLI that detects incomplete idempotency keys in cross-chain bridge fulfillment functions — the root cause pattern behind $2B+ in bridge exploits. Built from a real HackerOne High (CC-1) finding in Ripio's bridge. Mass-scanned 25 major protocols across 3,199+ Solidity files in under 5 seconds.</p>
+                <p class="proj-desc">Python CLI that detects incomplete idempotency keys in cross-chain bridge fulfillment functions — the root cause pattern behind $2B+ in bridge exploits. Built from a real HackerOne finding (CC-1) in Ripio's bridge. Expanded to 4 tiers covering 65 major protocols across 5,000+ Solidity files. Confirmed HIGH findings in Celer cBridge and Brevis Network via responsible disclosure.</p>
                 <div class="tool-terminal">
                     <div class="tt-bar"><span></span><span></span><span></span></div>
-                    <pre class="tt-body"><span class="tt-dim">$ bridge-detect scan</span>
+                    <pre class="tt-body"><span class="tt-dim">$ bridge-detect scan --all-tiers</span>
 <span class="tt-dim">──────────────────────────────────────</span>
-  Protocols : <span class="tt-cyan">25</span>   Files : <span class="tt-cyan">3,199</span>
+  Protocols : <span class="tt-cyan">65</span>   Files : <span class="tt-cyan">5,094</span>
 <span class="tt-dim">──────────────────────────────────────</span>
   Across Protocol         199   <span class="tt-green">clean</span>
-  Hop Protocol             82   <span class="tt-green">clean</span>
   Stargate v2             113   <span class="tt-green">clean</span>
-  Connext                 151   <span class="tt-green">clean</span>
-  Synapse Protocol        232   <span class="tt-green">clean</span>
   <span class="tt-red">Celer cBridge           128   1 finding</span>
   LayerZero v2            206   <span class="tt-green">clean</span>
   Chainlink CCIP        1,036   <span class="tt-green">clean</span>
   Wormhole                 60   <span class="tt-green">clean</span>
-  Arbitrum Bridge         141   <span class="tt-green">clean</span>
-  zkSync Bridge           236   <span class="tt-green">clean</span>
-  <span class="tt-dim">… +14 more protocols</span>
+  Taiko Bridge            312   <span class="tt-green">clean</span>
+  <span class="tt-red">Brevis Network           94   1 finding</span>
+  Scroll Bridge           281   <span class="tt-green">clean</span>
+  <span class="tt-dim">… +56 more protocols</span>
 <span class="tt-dim">──────────────────────────────────────</span>
   <span class="tt-red">[HIGH] Celer · PeggedBrc20Bridge.sol</span>
-  <span class="tt-dim">  missing destChainId / block.chainid</span>
+  <span class="tt-dim">  missing block.chainid in mintId key</span>
+  <span class="tt-red">[HIGH] Brevis · PegBridge.sol</span>
+  <span class="tt-dim">  missing block.chainid in mintId key</span>
 <span class="tt-dim">──────────────────────────────────────</span></pre>
                 </div>
                 <div class="proj-tags">
                     <span class="tag">Python</span>
                     <span class="tag">Static Analysis</span>
                     <span class="tag">Cross-chain</span>
-                    <span class="tag">25 protocols</span>
+                    <span class="tag">65 protocols</span>
+                    <span class="tag">2 disclosures</span>
                     <span class="tag">May 2026</span>
                 </div>
             </div>
 
-            <!-- 5. Web2 -->
+            <!-- 5. Ripio Bug Bounty -->
+            <div class="proj-card">
+                <div class="proj-top">
+                    <span class="proj-icon">🐛</span>
+                    <div class="proj-links">
+                        <a href="https://hackerone.com/reports/3739970" target="_blank" aria-label="HackerOne Report" style="font-family:var(--mono);font-size:0.7rem;color:var(--cyan);text-decoration:none;">H1 #3739970</a>
+                    </div>
+                </div>
+                <div class="proj-name">Ripio — Cross-Chain Double-Mint (CC-1)</div>
+                <p class="proj-desc">Identified a cross-chain replay vulnerability in Ripio's <code>BridgeDeposit.sol</code>: the idempotency key for <code>fulfillBridgeMint()</code> omits <code>destChainId</code>, meaning a single source-chain burn can trigger independent mints on all 6 destination chains. The <code>bridgeFulfilled</code> mapping is chain-local — the same key is accepted fresh on every chain. CVSS 8.9 High. Submitted via HackerOne; triaged as Informational by program (dispute in progress — the bug class has caused $2B+ in losses industry-wide).</p>
+                <div class="proj-tags">
+                    <span class="tag">Bug Bounty</span>
+                    <span class="tag">HackerOne</span>
+                    <span class="tag">Cross-chain</span>
+                    <span class="tag">Solidity</span>
+                    <span class="tag">CVSS 8.9</span>
+                    <span class="tag">May 2026</span>
+                </div>
+            </div>
+
+            <!-- 6. Web2 -->
             <div class="proj-card">
                 <div class="proj-top">
                     <span class="proj-icon">🌐</span>
