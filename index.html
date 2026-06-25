@@ -811,37 +811,41 @@
                 </div>
             </div>
 
-            <!-- 6. HackenProof Bug Bounty -->
+            <!-- 6. Bug Bounty & Competitive Findings -->
             <div class="proj-card proj-card--tool">
                 <div class="proj-top">
-                    <span class="proj-icon">🐞</span>
+                    <span class="proj-icon">🎯</span>
                     <div class="proj-links">
-                        <a href="https://hackenproof.com/hackers/BlackBurn" target="_blank" aria-label="HackenProof Profile" style="font-family:var(--mono);font-size:0.7rem;color:var(--cyan);text-decoration:none;">@BlackBurn</a>
+                        <a href="https://hackenproof.com/hackers/BlackBurn" target="_blank" style="font-family:var(--mono);font-size:0.65rem;color:var(--cyan);text-decoration:none;">HP</a>
+                        <a href="https://cantina.xyz/u/MuscleFreak92" target="_blank" style="font-family:var(--mono);font-size:0.65rem;color:var(--cyan);text-decoration:none;">Cantina</a>
                     </div>
                 </div>
-                <div class="proj-name">HackenProof Bug Bounty — Tickets Travel Network</div>
-                <p class="proj-desc">Web and mobile bug bounty engagement on Tickets Travel Network across multiple attack surfaces — web infrastructure, APIs, and Android apps.</p>
+                <div class="proj-name">Bug Bounty &amp; Competitive Audit Findings</div>
+                <p class="proj-desc">Live security findings across Web3 smart contract competitions and the off-chain infrastructure that powers decentralized protocols — mobile apps, backend APIs, and web services that Web3 wallets and DeFi frontends depend on.</p>
                 <div class="tool-terminal">
                     <div class="tt-bar"><span></span><span></span><span></span></div>
-                    <pre class="tt-body"><span class="tt-dim">$ hackenproof findings --program=TTN</span>
-<span class="tt-dim">──────────────────────────────────────</span>
-  <span class="tt-red">[MED]  F5  · SSRF via XML-RPC Pingback</span>
-  <span class="tt-dim">  blog.tickets.ua · WAF bypass via origin IP</span>
-  <span class="tt-dim">  ngrok callback confirmed · $100 paid</span>
+                    <pre class="tt-body"><span class="tt-dim">$ findings --cantina --hackenproof</span>
+<span class="tt-dim">── Cantina · web3 contracts ───────────</span>
+  <span class="tt-red">[LOW]  Reserve Governor · Cantina 2026</span>
+  <span class="tt-dim">  governance contest · 1 valid finding</span>
 
-  <span class="tt-red">[HIGH] TTNMOB-78 · Exported Activity → Bridge Abuse</span>
-  <span class="tt-dim">  OnNotificationReceiverActivity (no permission)</span>
-  <span class="tt-dim">  valid · known issue · bonus points awarded</span>
+<span class="tt-dim">── HackenProof · web3 infra &amp; mobile ──</span>
+  <span class="tt-red">[MED]  SSRF · XML-RPC Pingback</span>
+  <span class="tt-dim">  web3 platform backend · WAF bypass · paid</span>
+
+  <span class="tt-red">[HIGH] TTNMOB-78 · Android Bridge Injection</span>
+  <span class="tt-dim">  mobile app · exported activity · Cordova bridge</span>
+  <span class="tt-dim">  valid · known issue · bonus awarded</span>
 <span class="tt-dim">──────────────────────────────────────</span>
-  Bounties : <span class="tt-cyan">$100</span>   Valid findings : <span class="tt-cyan">2</span></pre>
+  Platforms : <span class="tt-cyan">2</span>   Valid findings : <span class="tt-cyan">3</span></pre>
                 </div>
                 <div class="proj-tags">
                     <span class="tag">Bug Bounty</span>
+                    <span class="tag">Competitive Audit</span>
+                    <span class="tag">Cantina</span>
                     <span class="tag">HackenProof</span>
-                    <span class="tag">Web</span>
                     <span class="tag">Android</span>
                     <span class="tag">SSRF</span>
-                    <span class="tag">Mobile</span>
                     <span class="tag">2026</span>
                 </div>
             </div>
