@@ -341,7 +341,7 @@
         /* ── Work ── */
         .projects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 18px;
         }
         .proj-card {
@@ -351,6 +351,9 @@
             box-shadow: 4px 4px 0 rgba(123,47,255,0.25);
             transition: all 0.18s;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
         }
         .proj-card:hover {
             border-color: rgba(0,229,255,0.5);
@@ -374,7 +377,7 @@
             font-size: 0.85rem; color: var(--muted);
             line-height: 1.65; margin-bottom: 18px;
         }
-        .proj-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+        .proj-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: auto; padding-top: 4px; }
         .tag {
             font-family: var(--px); font-size: 0.46rem;
             color: var(--cyan); padding: 6px 11px;
@@ -387,7 +390,6 @@
             border: 1px solid rgba(0,229,255,0.2);
             margin: 0 0 18px;
             font-size: 0.72rem;
-            overflow: hidden;
         }
         .tt-bar {
             background: rgba(0,229,255,0.06);
@@ -404,7 +406,7 @@
             padding: 12px 14px;
             margin: 0;
             font-family: var(--mono);
-            font-size: 0.7rem;
+            font-size: 0.62rem;
             line-height: 1.75;
             overflow-x: auto;
             white-space: pre;
@@ -465,6 +467,17 @@
         .about-extras .tag { font-size: 0.48rem; padding: 6px 12px; }
         .tag-purple { color: var(--purple) !important; border-color: rgba(123,47,255,0.4) !important; }
         .tag-gold { color: #ffd700 !important; border-color: rgba(255,215,0,0.35) !important; }
+
+        /* ── Project grid: balance a lone card in the last row ── */
+        @media (min-width: 900px) {
+            .projects-grid { grid-template-columns: repeat(3, 1fr); }
+            .projects-grid > .proj-card:last-child:nth-child(3n+1) { grid-column: 1 / -1; }
+            .projects-grid > .proj-card:last-child:nth-child(3n+1) .proj-desc { max-width: 640px; }
+        }
+        @media (min-width: 620px) and (max-width: 899px) {
+            .projects-grid { grid-template-columns: repeat(2, 1fr); }
+            .projects-grid > .proj-card:last-child:nth-child(2n+1) { grid-column: span 2; }
+        }
 
         /* ── Responsive ── */
         @media (max-width: 900px) {
@@ -635,8 +648,17 @@
         <div class="exp-list">
 
             <div class="exp-item">
+                <div class="exp-role">Technical Delivery Manager <span>@ NetSentries</span></div>
+                <div class="exp-date">Nov 2026 — Present</div>
+                <ul class="exp-points">
+                    <li>Promoted from Senior Consultant to Technical Delivery Manager, taking on ownership of delivery quality and client outcomes across a wider engagement portfolio.</li>
+                    <li>PLACEHOLDER — Prameya, fill in 2–3 real TDM responsibilities here (team/people management, delivery oversight, client-facing ownership, etc.) and I'll drop this note.</li>
+                </ul>
+            </div>
+
+            <div class="exp-item">
                 <div class="exp-role">Senior Consultant — Offensive Security <span>@ NetSentries</span></div>
-                <div class="exp-date">Sep 2024 — Present</div>
+                <div class="exp-date">Sep 2024 — Oct 2026</div>
                 <ul class="exp-points">
                     <li>Lead Consultant across multiple simultaneous enterprise engagements, owning end-to-end delivery including scoping, execution, and executive-level reporting.</li>
                     <li>Reported 1,000+ Early Notifications (ENs) of Critical/High severity findings across the client portfolio; designated specialist on low-yield engagements to surface vulnerabilities where others found none.</li>
@@ -831,13 +853,15 @@
 
 <span class="tt-dim">── HackenProof · web3 infra &amp; mobile ──</span>
   <span class="tt-red">[MED]  SSRF · XML-RPC Pingback</span>
-  <span class="tt-dim">  web3 platform backend · WAF bypass · paid</span>
+  <span class="tt-dim">  web3 backend · WAF bypass · paid</span>
 
-  <span class="tt-red">[HIGH] TTNMOB-78 · Android Bridge Injection</span>
-  <span class="tt-dim">  mobile app · exported activity · Cordova bridge</span>
-  <span class="tt-dim">  valid · known issue · bonus awarded</span>
+  <span class="tt-red">[HIGH] TTNMOB-78 · Bridge Injection</span>
+  <span class="tt-dim">  exported activity · bonus awarded</span>
+
+  <span class="tt-red">[HIGH] TTNMOB-80 · WebView Bridge</span>
+  <span class="tt-dim">  Firebase creds stolen · paid</span>
 <span class="tt-dim">──────────────────────────────────────</span>
-  Platforms : <span class="tt-cyan">2</span>   Valid findings : <span class="tt-cyan">3</span></pre>
+  Platforms : <span class="tt-cyan">2</span>   Valid findings : <span class="tt-cyan">4</span></pre>
                 </div>
                 <div class="proj-tags">
                     <span class="tag">Bug Bounty</span>
